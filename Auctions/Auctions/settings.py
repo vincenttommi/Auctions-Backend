@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     # A Django App that adds Cross-Origin Resource Sharing (CORS) headers to responses.
     'rest_framework',
     'rest_framework.authtoken',
+    'auction',
 
 ]
 
