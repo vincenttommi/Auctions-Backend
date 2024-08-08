@@ -9,6 +9,10 @@ from django.contrib.auth import authenticate
 from rest_framework.decorators import authentication_classes,permission_classes 
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
+from .models import AuctionItem
+from .serializers import AuctionItemSerializer
+from rest_framework.parsers import JSONParser
+
 
 
 
@@ -76,3 +80,56 @@ def logout(request):
 
 
 
+
+@api_view(['GET'])
+def list_auction_items(request):
+    items = AuctionItem.objects.all().order_by('id')
+    serializer = AuctionItemSerializer(items, many=True)
+    return Response(serializer.data)
+
+
+
+
+@api_view(['POST'])
+def create_auction_item(request):
+    #allows us to convert python objects into JSON strings
+    data  = JSONParser().parse(request)
+    #checking if an item with same name exists
+    if AuctionItem.objects.filter(name=data.get('name')).exists():
+        return Response({'error': 'Item with this name already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    serializer = AuctionItemSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+@api_view(['PUT'])
+def  update_auction_item(request,pk):
+    try:
+        item  = AuctionItem.objects.get(pk=pk)
+    except AuctionItem.DoesNotExist:
+        return Response({'error':'item not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+
+    data  =  JSONParser().parse(request)
+    #allows us to convert python objects into JSON strings
+    serializer  = AuctionItemSerializer(item, data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['DELETE'])
+def delete_auction_item(request,pk):
+    try:
+        item = AuctionItem.objects.get(pk=pk)
+    except AuctionItem.DoesNotExist:
+        return Response({'error':'Item not found'}, status=status.HTTP_404_NOT_FOUND)   
+    item.delete()
+    return Response({'message':'Item deleted succcessfully'}, status=status.HTTP_204_NO_CONTENT)     

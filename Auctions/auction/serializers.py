@@ -1,5 +1,7 @@
 from  django.contrib.auth.models import User
 from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
+from .models import AuctionItem
 
 
 
@@ -20,3 +22,12 @@ class UserSerializer(ModelSerializer):
             password=validated_data['password']
         )
         return user
+    
+
+
+
+
+class AuctionItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = AuctionItem
+        fields = '__all__'
